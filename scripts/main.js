@@ -31,16 +31,19 @@ class CarShowcase {
         this.currentModel = null;
         this.garageEnvironment = null;
 
+        // Create models list element in the sidebar
+        this.createModelsListElement();
+
         this.setupGarageLighting();
         this.setupEventListeners();
         this.setupColorPicker();
         this.loadGarageEnvironment();
+        this.loadCarModels();
         this.animate();
     }
 
-
     loadGarageEnvironment() {
-        const garageModelPath = new URL('../models/garage_warehouse.glb', import.meta.url).href;
+        const garageModelPath = new URL('../public/models/garage_warehouse.glb', import.meta.url).href;
     
         this.loader.load(
             garageModelPath,
@@ -82,10 +85,94 @@ class CarShowcase {
         );
     }
 
+    createModelsListElement() {
+        const modelsLibrary = document.getElementById('models-library');
+        const modelsList = document.createElement('ul');
+        modelsList.id = 'models-list';
+        modelsLibrary.appendChild(modelsList);
+    }
+
+    loadCarModels() {
+        // Array of car model filenames
+        const carModels = [
+            '2009_volkswagen_amarok_lp.glb', 
+            '2015_lamborghini_huracan.glb', 
+            '2018_maserati_granturismo.glb', 
+            'bmw_m6_gran_coupe.glb',
+            'mercedes-benz_a45_amg_2018.glb',
+            // Add more car model filenames as needed
+        ];
+
+        carModels.forEach(modelFileName => {
+            // Use an absolute path from the public directory
+            const modelPath = `/models/cars/${modelFileName}`;
+            const modelName = modelFileName.replace('.glb', '').replace(/_/g, ' ');
+            
+            fetch(modelPath)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    
+                    this.loader.load(
+                        url,
+                        (gltf) => {
+                            // Store the model URL
+                            this.loadedModels[modelName] = url;
+                            
+                            // Add to models list
+                            if (!this.modelsList.includes(modelName)) {
+                                this.modelsList.push(modelName);
+                                this.updateModelsList();
+                            }
+                        },
+                        undefined,
+                        (error) => {
+                            console.error(`Error loading model ${modelFileName}:`, error);
+                        }
+                    );
+                })
+                .catch(error => {
+                    console.error(`Error fetching model ${modelFileName}:`, error);
+                });
+        });
+    }
 
     setupEventListeners() {
-        document.getElementById('model-upload').addEventListener('change', (event) => this.handleFileUpload(event));
         window.addEventListener('resize', () => this.onWindowResize());
+    
+        // File upload handling
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.glb,.gltf';
+        fileInput.id = 'model-upload';
+        fileInput.style.display = 'none';
+    
+        const uploadButton = document.createElement('button');
+        uploadButton.textContent = 'Upload Model';
+        uploadButton.addEventListener('click', () => fileInput.click());
+    
+        const uploadSection = document.getElementById('upload-section');
+        uploadSection.appendChild(fileInput);
+        uploadSection.appendChild(uploadButton);
+    
+        fileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const modelUrl = e.target.result;
+                    // Use file name (without extension) as model name
+                    const modelName = file.name.replace(/\.(glb|gltf)$/, '');
+                    this.loadModel(modelUrl, modelName, true);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
     }
 
     setupColorPicker() {
@@ -107,7 +194,6 @@ class CarShowcase {
         // Add event listener
         colorPicker.addEventListener('input', (event) => this.changeModelColor(event.target.value));
     }
-    
 
     setupGarageLighting() {
         // Clear any existing lights
@@ -150,40 +236,6 @@ class CarShowcase {
         this.scene.add(groundLight);
     }
 
-    
-    setupEventListeners() {
-        window.addEventListener('resize', () => this.onWindowResize());
-    
-        // File upload handling
-        const fileInput = document.createElement('input');
-        fileInput.type = 'file';
-        fileInput.accept = '.glb,.gltf';
-        fileInput.id = 'model-upload';
-        fileInput.style.display = 'none';
-    
-        const uploadButton = document.createElement('button');
-        uploadButton.textContent = 'Upload Model';
-        uploadButton.addEventListener('click', () => fileInput.click());
-    
-        const uploadSection = document.getElementById('upload-section');
-        uploadSection.appendChild(fileInput);
-        uploadSection.appendChild(uploadButton);
-    
-        fileInput.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const modelUrl = e.target.result;
-                    // Use file name (without extension) as model name
-                    const modelName = file.name.replace(/\.(glb|gltf)$/, '');
-                    this.loadModel(modelUrl, modelName, true);
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-    
     changeModelColor(color) {
         if (this.currentModel) {
             this.currentModel.traverse((child) => {
@@ -265,6 +317,7 @@ class CarShowcase {
             }
         );
     }
+
     updateModelsList() {
         const modelsList = document.getElementById('models-list');
         modelsList.innerHTML = '';

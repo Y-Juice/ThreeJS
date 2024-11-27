@@ -2,52 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>3D Car Showcase</title>
-    <style>
-        body { 
-            margin: 0; 
-            font-family: Arial, sans-serif;
-            display: flex;
-            height: 100vh;
-        }
-        #sidebar {
-            width: 250px;
-            background-color: #f0f0f0;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        #threejs-container {
-            flex-grow: 1;
-        }
-        #upload-section {
-            margin-bottom: 20px;
-        }
-        #models-list {
-            list-style-type: none;
-            padding: 0;
-        }
-        #models-list li {
-            cursor: pointer;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-        #models-list li:hover {
-            background-color: #e0e0e0;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exotic Rentals</title>
 </head>
 <body>
-    <div id="sidebar">
-        <div id="upload-section">
-            <h3>Upload 3D Model</h3>
-            <input type="file" id="model-upload" accept=".gltf,.glb">
-        </div>
-        <div id="models-library">
-            <h3>Available Models</h3>
-            <ul id="models-list"></ul>
-        </div>
-    </div>
-    <div id="threejs-container"></div>
-    <script type="module" src="/scripts/main.js"></script>
+    
 </body>
 </html>
