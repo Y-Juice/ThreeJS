@@ -4,11 +4,16 @@
     <meta charset="UTF-8">
     <title>RentaSPEED - Preview</title>
     <link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
-    <style>
-       
-    </style>
+    <link rel="stylesheet" href="/styles/index.css">
+
 </head>
 <body>
+<div class="progress-bar-container">
+    <div class="progress-bar">Loading...</div>
+    <progress id="progress-bar" value="0" max="100"></progress>
+</div>
+    <div id="threejs-container"></div>
+
     <div id="sidebar">
         <div id="upload-section">
             <h3>Upload 3D Model</h3>
@@ -18,7 +23,6 @@
             <ul id="models-list"></ul>
         </div>
     </div>
-    <div id="threejs-container"></div>
     <script type="module" src="/scripts/main.js"></script>
 </body>
 </html>

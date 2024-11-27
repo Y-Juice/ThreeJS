@@ -25,7 +25,24 @@ class CarShowcase {
         this.camera.position.z = 5;
         this.camera.position.y = 1.5;
 
-        this.loader = new GLTFLoader();
+        const progressBar = document.getElementById('progress-bar');
+
+
+        const loadingManager = new THREE.LoadingManager();
+        const progressBarContainer = document.querySelector('.progress-bar-container');
+
+        loadingManager.onProgress = function(url, loaded, total) {
+            progressBar.value = (loaded/total) * 100;
+
+        }
+
+
+        loadingManager.onLoad = function() {
+            progressBarContainer.style.display = 'none';
+
+        }
+
+        this.loader = new GLTFLoader(loadingManager);
         this.modelsList = [];
         this.loadedModels = {};
         this.currentModel = null;
@@ -34,12 +51,31 @@ class CarShowcase {
         // Create models list element in the sidebar
         this.createModelsListElement();
 
+        this.createSidebarToggle();
         this.setupGarageLighting();
         this.setupEventListeners();
         this.setupColorPicker();
         this.loadGarageEnvironment();
         this.loadCarModels();
         this.animate();
+    }
+
+    createSidebarToggle() {
+        // Create collapse button
+        const collapseBtn = document.createElement('button');
+        collapseBtn.textContent = '☰';
+        collapseBtn.id = 'collapse-btn';
+        
+        const sidebar = document.getElementById('sidebar');
+        sidebar.appendChild(collapseBtn);
+
+        // Add click event to toggle sidebar
+        collapseBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            
+            // Update button text based on sidebar state
+            collapseBtn.textContent = sidebar.classList.contains('collapsed') ? '▶' : '☰';
+        });
     }
 
     loadGarageEnvironment() {
@@ -213,13 +249,14 @@ class CarShowcase {
         this.scene.add(mainOverheadLight);
 
         // Intense ambient light to simulate garage lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 2);
+        const ambientLight = new THREE.AmbientLight(0xffffff, 3);
         this.scene.add(ambientLight);
 
         // Side wall lights to create depth and reduce harsh shadows
         const leftWallLight = new THREE.PointLight(0xffffff, 2, 20);
         leftWallLight.position.set(-5, 3, 0);
         this.scene.add(leftWallLight);
+
 
         const rightWallLight = new THREE.PointLight(0xffffff, 2, 20);
         rightWallLight.position.set(5, 3, 0);

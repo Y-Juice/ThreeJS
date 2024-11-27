@@ -3,9 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Exotic Rentals</title>
+    <title>RentaSPEED - Luxury Car Rentals</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+        }
+        .hero-bg {
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1605559424843-9e4f8c265edc?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
 </head>
-<body>
-    
+<body class="bg-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-black text-white p-4 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="text-2xl font-bold">RentaSPEED</div>
+            <div class="space-x-6">
+                <a href="#" class="hover:text-gray-300">Home</a>
+                <a href="#cars" class="hover:text-gray-300">Fleet</a>
+                <a href="#rates" class="hover:text-gray-300">Rates</a>
+                <a href="preview.html" class="hover:text-gray-300">3D Showroom</a>
+                <a href="#contact" class="hover:text-gray-300">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="hero-bg text-white text-center py-24">
+        <div class="container mx-auto">
+            <h1 class="text-5xl font-bold mb-6">Experience Luxury on Wheels</h1>
+            <p class="text-xl mb-8">Rent the car of your dreams with RentaSPEED</p>
+            <div class="space-x-4">
+                <a href="#cars" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-full inline-block">Browse Fleet</a>
+                <a href="#rates" class="bg-transparent border-2 border-white hover:bg-white hover:text-black text-white font-bold py-3 px-6 rounded-full inline-block">View Rates</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Featured Cars Section -->
+    <section id="cars" class="container mx-auto py-16">
+        <h2 class="text-4xl font-bold text-center mb-12">Our Premium Fleet</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Car Card 1 -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1555652736-bdfeccb4008f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80" alt="Luxury Sports Car" class="w-full h-64 object-cover">
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold mb-4">Sports Cars</h3>
+                    <p class="text-gray-600 mb-4">High-performance vehicles for the ultimate driving experience.</p>
+                    <a href="#" class="text-red-600 hover:underline">View Collection</a>
+                </div>
+            </div>
+            
+            <!-- Car Card 2 -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1605811257337-9a7a26bb0c6f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80" alt="Luxury SUV" class="w-full h-64 object-cover">
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold mb-4">SUVs</h3>
+                    <p class="text-gray-600 mb-4">Spacious and luxurious SUVs for comfort and style.</p>
+                    <a href="#" class="text-red-600 hover:underline">View Collection</a>
+                </div>
+            </div>
+            
+            <!-- Car Card 3 -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1617104666298-550a8cdf9a39?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1974&q=80" alt="Luxury Sedan" class="w-full h-64 object-cover">
+                <div class="p-6">
+                    <h3 class="text-2xl font-bold mb-4">Luxury Sedans</h3>
+                    <p class="text-gray-600 mb-4">Elegant sedans perfect for business or leisure.</p>
+                    <a href="#" class="text-red-600 hover:underline">View Collection</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Rates Section -->
+    <section id="rates" class="bg-gray-200 py-16">
+        <div class="container mx-auto text-center">
+            <h2 class="text-4xl font-bold mb-8">Simple & Transparent Pricing</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Pricing Card 1 -->
+                <div class="bg-white p-8 rounded-lg shadow-lg">
+                    <h3 class="text-2xl font-bold mb-4">Weekend Rental</h3>
+                    <p class="text-4xl font-bold text-red-600 mb-4">$199/day</p>
+                    <ul class="mb-6 text-gray-600">
+                        <li>Fri-Sun Rental</li>
+                        <li>Unlimited Mileage</li>
+                        <li>Comprehensive Insurance</li>
+                    </ul>
+                    <a href="#" class="bg-red-600 text-white py-2 px-6 rounded-full hover:bg-red-700">Book Now</a>
+                </div>
+
+                <!-- Pricing Card 2 -->
+                <div class="bg-white p-8 rounded-lg shadow-lg transform scale-105">
+                    <h3 class="text-2xl font-bold mb-4">Weekly Rental</h3>
+                    <p class="text-4xl font-bold text-red-600 mb-4">$799/week</p>
+                    <ul class="mb-6 text-gray-600">
+                        <li>7-Day Rental</li>
+                        <li>Free Mileage</li>
+                        <li>Premium Support</li>
+                    </ul>
+                    <a href="#" class="bg-red-600 text-white py-2 px-6 rounded-full hover:bg-red-700">Book Now</a>
+                </div>
+
+                <!-- Pricing Card 3 -->
+                <div class="bg-white p-8 rounded-lg shadow-lg">
+                    <h3 class="text-2xl font-bold mb-4">Monthly Rental</h3>
+                    <p class="text-4xl font-bold text-red-600 mb-4">$2,499/month</p>
+                    <ul class="mb-6 text-gray-600">
+                        <li>30-Day Rental</li>
+                        <li>Unlimited Mileage</li>
+                        <li>Maintenance Included</li>
+                    </ul>
+                    <a href="#" class="bg-red-600 text-white py-2 px-6 rounded-full hover:bg-red-700">Book Now</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="container mx-auto py-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+                <h2 class="text-4xl font-bold mb-8">Contact Us</h2>
+                <form class="bg-white p-8 rounded-lg shadow-lg">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Name</label>
+                        <input type="text" class="w-full px-3 py-2 border rounded-lg" placeholder="Your Name">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Email</label>
+                        <input type="email" class="w-full px-3 py-2 border rounded-lg" placeholder="Your Email">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2">Message</label>
+                        <textarea class="w-full px-3 py-2 border rounded-lg" rows="4" placeholder="Your Message"></textarea>
+                    </div>
+                    <button class="bg-red-600 text-white py-2 px-6 rounded-full hover:bg-red-700">Send Message</button>
+                </form>
+            </div>
+            <div>
+                <h3 class="text-2xl font-bold mb-4">RentaSPEED Locations</h3>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <p class="mb-2"><strong>Headquarters:</strong> 123 Speed Lane, Luxury City</p>
+                    <p class="mb-2"><strong>Phone:</strong> (555) 123-SPEED</p>
+                    <p class="mb-2"><strong>Email:</strong> rentals@rentaspeed.com</p>
+                    <div class="mt-4">
+                        <h4 class="font-bold mb-2">Business Hours:</h4>
+                        <p>Mon-Fri: 8am - 8pm</p>
+                        <p>Sat-Sun: 9am - 5pm</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black text-white py-8">
+        <div class="container mx-auto text-center">
+            <p>&copy; 2024 RentaSPEED. All Rights Reserved.</p>
+            <div class="mt-4 space-x-4">
+                <a href="#" class="hover:text-gray-300">Privacy Policy</a>
+                <a href="#" class="hover:text-gray-300">Terms of Service</a>
+                <a href="#" class="hover:text-gray-300">FAQ</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Feather Icons
+        feather.replace();
+    </script>
 </body>
 </html>
