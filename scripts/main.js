@@ -67,6 +67,7 @@ class CarShowcase {
         collapseBtn.id = 'collapse-btn';
         
         const sidebar = document.getElementById('sidebar');
+        
         sidebar.appendChild(collapseBtn);
 
         // Add click event to toggle sidebar
