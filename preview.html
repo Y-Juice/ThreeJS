@@ -1,40 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>RentaSPEED - Preview</title>
-    <link rel="icon" type="image/x-icon" href="/icons/favicon.ico">
-    <link rel="stylesheet" href="/styles/preview.css">
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="/icons/favicon.ico" />
+    <link rel="stylesheet" href="/styles/preview.css" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-
-
-</head>
-<body>
-
-
-<div class="progress-bar-container">
-    <div class="progress-bar">Loading...</div>
-    <progress id="progress-bar" value="0" max="100"></progress>
-</div>
-<nav class="bg-black text-white p-4 shadow-md" style="height: 100px; width: 100px; position: absolute; z-index: 100;">
-    <div class="container mx-auto flex justify-between items-center">
-        <div class="space-x-6">
-            <a href="index.html" class="hover:text-gray-300">Go Back</a>
-        </div>
+  </head>
+  <body>
+    <div class="progress-bar-container">
+      <div class="progress-bar">Loading...</div>
+      <progress id="progress-bar" value="0" max="100"></progress>
     </div>
-</nav>
+    <nav
+      style="height: 100px; width: 100px; position: absolute; z-index: 100"
+    >
+      <div class="container mx-auto flex justify-between items-center">
+        <div class="space-x-6">
+          <a href="index.html" class="back-button">Terug naar hoofdpagina</a>
+        </div>
+      </div>
+    </nav>
     <div id="threejs-container"></div>
 
     <div id="sidebar">
-        <div id="upload-section">
-            <h3>Upload 3D Model</h3>
-        </div>
-        <div id="models-library">
-            <h3>Available Models</h3>
-            <ul id="models-list"></ul>
-        </div>
+      <div id="upload-section">
+        <h3>Upload 3D Model</h3>
+      </div>
+      <div id="models-library">
+        <h3>Available Models</h3>
+        <ul id="models-list"></ul>
+      </div>
     </div>
     <script type="module" src="/scripts/main.js"></script>
-</body>
+  </body>
 </html>

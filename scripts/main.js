@@ -11,19 +11,25 @@ class CarShowcase {
             antialias: true,
             alpha: true 
         });
-        this.renderer.setSize(window.innerWidth * 0.8, window.innerHeight);
         
+        // Initialize headlights properties
+        this.headlights = [];
+        this.headlightsOn = false;
+        
+        const container = document.getElementById('threejs-container');
+        this.renderer.setSize(container.clientWidth, container.clientHeight);
+        container.appendChild(this.renderer.domElement);
+
         // Enhanced shadow rendering
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        
-        document.getElementById('threejs-container').appendChild(this.renderer.domElement);
 
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
         this.controls.enableDamping = true;
 
         this.camera.position.z = 5;
         this.camera.position.y = 1.5;
+
 
         const progressBar = document.getElementById('progress-bar');
 
@@ -58,69 +64,163 @@ class CarShowcase {
         this.loadGarageEnvironment();
         this.loadCarModels();
         this.animate();
+        this.renderer.domElement.addEventListener('click', (event) => this.onModelClick(event));
     }
 
     createSidebarToggle() {
-        // Create collapse button
         const collapseBtn = document.createElement('button');
         collapseBtn.textContent = '☰';
         collapseBtn.id = 'collapse-btn';
         
         const sidebar = document.getElementById('sidebar');
+        const container = document.getElementById('threejs-container');
         
         sidebar.appendChild(collapseBtn);
 
-        // Add click event to toggle sidebar
         collapseBtn.addEventListener('click', () => {
             sidebar.classList.toggle('collapsed');
-            
-            // Update button text based on sidebar state
             collapseBtn.textContent = sidebar.classList.contains('collapsed') ? '▶' : '☰';
+            
+            // Update renderer size after sidebar transition
+            setTimeout(() => {
+                this.renderer.setSize(container.clientWidth, container.clientHeight);
+                this.camera.aspect = container.clientWidth / container.clientHeight;
+                this.camera.updateProjectionMatrix();
+            }, 300);
         });
     }
 
-    loadGarageEnvironment() {
-        const garageModelPath = new URL('../public/models/garage_warehouse.glb', import.meta.url).href;
-    
+    createHeadlights(model) {
+        // Remove any existing headlights
+        this.headlights.forEach(light => this.scene.remove(light));
+        this.headlights = [];
+
+        // Create new headlights
+        const leftHeadlight = new THREE.SpotLight(0xffffff, 0);
+        const rightHeadlight = new THREE.SpotLight(0xffffff, 0);
+
+        // Calculate headlight positions based on model dimensions
+        const box = new THREE.Box3().setFromObject(model);
+        const size = box.getSize(new THREE.Vector3());
+        const front = box.max.z;
+
+        // Position headlights relative to model size
+        leftHeadlight.position.set(-size.x/4, size.y/3, front);
+        rightHeadlight.position.set(size.x/4, size.y/3, front);
+
+        // Configure headlights
+        [leftHeadlight, rightHeadlight].forEach(light => {
+            light.angle = Math.PI / 6;
+            light.penumbra = 0.2;
+            light.decay = 2;
+            light.distance = 50;
+            light.castShadow = true;
+            
+            // Add target for the spotlight
+            const target = new THREE.Object3D();
+            target.position.set(light.position.x, -2, front + 10);
+            this.scene.add(target);
+            light.target = target;
+            
+            this.scene.add(light);
+            this.headlights.push(light);
+        });
+    }
+
+    toggleHeadlights() {
+        this.headlightsOn = !this.headlightsOn;
+        const intensity = this.headlightsOn ? 2 : 0;
+        this.headlights.forEach(light => {
+            light.intensity = intensity;
+        });
+    }
+
+    onModelClick(event) {
+        if (!this.currentModel) return;
+
+        // Calculate mouse position in normalized device coordinates
+        const rect = this.renderer.domElement.getBoundingClientRect();
+        const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+        const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+        // Create raycaster
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2(x, y);
+        raycaster.setFromCamera(mouse, this.camera);
+
+        // Check for intersections
+        const intersects = raycaster.intersectObject(this.currentModel, true);
+        if (intersects.length > 0) {
+            this.toggleHeadlights();
+        }
+    }
+
+    onWindowResize() {
+        const container = document.getElementById('threejs-container');
+        this.camera.aspect = container.clientWidth / container.clientHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(container.clientWidth, container.clientHeight);
+    }
+
+    loadModel(url, name, isNewUpload = false) {
+        // Clear existing model before loading new one
+        if (this.currentModel) {
+            this.scene.remove(this.currentModel);
+            this.clearHeadlights();  // Clear existing headlights
+        }
+
         this.loader.load(
-            garageModelPath,
+            url,
             (gltf) => {
-                const garageModel = gltf.scene;
+                const model = gltf.scene;
+                this.currentModel = model;
                 
-                // Enable shadows for the garage
-                garageModel.traverse((child) => {
+                model.traverse((child) => {
                     if (child.isMesh) {
+                        child.castShadow = true;
                         child.receiveShadow = true;
                     }
                 });
-    
-                // Center the garage
-                const box = new THREE.Box3().setFromObject(garageModel);
+
+                const box = new THREE.Box3().setFromObject(model);
                 const center = box.getCenter(new THREE.Vector3());
-                garageModel.position.sub(center);
-    
-                // Scale the garage
+                model.position.sub(center);
+
                 const size = box.getSize(new THREE.Vector3());
                 const maxDim = Math.max(size.x, size.y, size.z);
-                const scaleFactor = 100 / maxDim;
-                garageModel.scale.set(scaleFactor, scaleFactor, scaleFactor);
-    
-                // Position garage in the scene
-                garageModel.position.set(27, -1, 58);
-    
-                this.scene.add(garageModel);
-                this.garageEnvironment = garageModel;
-    
-                // Adjust camera position to view the garage
-                this.camera.position.set(0, 2, 8);
-                this.camera.lookAt(0, 0, 0);
+                const scaleFactor = 23 / maxDim;
+                model.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+                model.position.set(-2, -2, 0);
+                this.scene.add(model);
+                
+                // Create headlights for the new model
+                this.createHeadlights(model);
+
+                this.loadedModels[name] = url;
+                if (isNewUpload && !this.modelsList.includes(name)) {
+                    this.modelsList.push(name);
+                    this.updateModelsList();
+                }
             },
             undefined,
             (error) => {
-                console.error('Error loading garage environment:', error);
+                console.error('Error loading model:', error);
             }
         );
     }
+
+    clearHeadlights() {
+        this.headlights.forEach(light => {
+            if (light.target) {
+                this.scene.remove(light.target);
+            }
+            this.scene.remove(light);
+        });
+        this.headlights = [];
+        this.headlightsOn = false;
+    }
+
 
     createModelsListElement() {
         const modelsLibrary = document.getElementById('models-library');
@@ -129,54 +229,64 @@ class CarShowcase {
         modelsLibrary.appendChild(modelsList);
     }
 
-    loadCarModels() {
-        // Array of car model filenames
-        const carModels = [
-            '2009_volkswagen_amarok_lp.glb', 
-            '2015_lamborghini_huracan.glb', 
-            '2018_maserati_granturismo.glb', 
-            'bmw_m6_gran_coupe.glb',
-            'mercedes-benz_a45_amg_2018.glb',
-            // Add more car model filenames as needed
-        ];
-
-        carModels.forEach(modelFileName => {
-            // Use an absolute path from the public directory
-            const modelPath = `/models/cars/${modelFileName}`;
-            const modelName = modelFileName.replace('.glb', '').replace(/_/g, ' ');
-            
-            fetch(modelPath)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    return response.blob();
-                })
-                .then(blob => {
-                    const url = URL.createObjectURL(blob);
-                    
-                    this.loader.load(
-                        url,
-                        (gltf) => {
-                            // Store the model URL
-                            this.loadedModels[modelName] = url;
-                            
-                            // Add to models list
-                            if (!this.modelsList.includes(modelName)) {
-                                this.modelsList.push(modelName);
-                                this.updateModelsList();
-                            }
-                        },
-                        undefined,
-                        (error) => {
-                            console.error(`Error loading model ${modelFileName}:`, error);
-                        }
-                    );
-                })
-                .catch(error => {
-                    console.error(`Error fetching model ${modelFileName}:`, error);
-                });
+    // Delete the second onWindowResize method and keep only this version
+    onWindowResize() {
+        const container = document.getElementById('threejs-container');
+        this.camera.aspect = container.clientWidth / container.clientHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(container.clientWidth, container.clientHeight);
+    }
+    updateModelsList() {
+        const modelsList = document.getElementById('models-list');
+        modelsList.innerHTML = '';
+        this.modelsList.forEach(modelName => {
+            const li = document.createElement('li');
+            li.textContent = modelName;
+            li.addEventListener('click', () => this.loadModelByName(modelName));
+            modelsList.appendChild(li);
         });
+    }
+
+
+    setupGarageLighting() {
+        // Clear any existing lights
+        while (this.scene.children.filter(child => child instanceof THREE.Light).length > 0) {
+            const light = this.scene.children.find(child => child instanceof THREE.Light);
+            this.scene.remove(light);
+        }
+
+        // Bright overhead fluorescent-like main light
+        const mainOverheadLight = new THREE.DirectionalLight(0xffffff, 4);
+        mainOverheadLight.position.set(0, 10, 0);
+        mainOverheadLight.castShadow = true;
+        mainOverheadLight.shadow.mapSize.width = 2048;
+        mainOverheadLight.shadow.mapSize.height = 2048;
+        mainOverheadLight.shadow.camera.near = 0.5;
+        mainOverheadLight.shadow.camera.far = 15;
+        this.scene.add(mainOverheadLight);
+
+        // Intense ambient light to simulate garage lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 3);
+        this.scene.add(ambientLight);
+
+        // Side wall lights to create depth and reduce harsh shadows
+        const leftWallLight = new THREE.PointLight(0xffffff, 2, 20);
+        leftWallLight.position.set(-5, 3, 0);
+        this.scene.add(leftWallLight);
+
+        const rightWallLight = new THREE.PointLight(0xffffff, 2, 20);
+        rightWallLight.position.set(5, 3, 0);
+        this.scene.add(rightWallLight);
+
+        // Back wall light
+        const backWallLight = new THREE.PointLight(0xffffff, 1.5, 15);
+        backWallLight.position.set(0, 2, -5);
+        this.scene.add(backWallLight);
+
+        // Ground bounce light to simulate light reflection from floor
+        const groundLight = new THREE.HemisphereLight(0xffffff, 0xcccccc, 1);
+        groundLight.position.set(0, 10, 0);
+        this.scene.add(groundLight);
     }
 
     setupEventListeners() {
@@ -232,48 +342,6 @@ class CarShowcase {
         colorPicker.addEventListener('input', (event) => this.changeModelColor(event.target.value));
     }
 
-    setupGarageLighting() {
-        // Clear any existing lights
-        while (this.scene.children.filter(child => child instanceof THREE.Light).length > 0) {
-            const light = this.scene.children.find(child => child instanceof THREE.Light);
-            this.scene.remove(light);
-        }
-
-        // Bright overhead fluorescent-like main light
-        const mainOverheadLight = new THREE.DirectionalLight(0xffffff, 4);
-        mainOverheadLight.position.set(0, 10, 0);
-        mainOverheadLight.castShadow = true;
-        mainOverheadLight.shadow.mapSize.width = 2048;
-        mainOverheadLight.shadow.mapSize.height = 2048;
-        mainOverheadLight.shadow.camera.near = 0.5;
-        mainOverheadLight.shadow.camera.far = 15;
-        this.scene.add(mainOverheadLight);
-
-        // Intense ambient light to simulate garage lighting
-        const ambientLight = new THREE.AmbientLight(0xffffff, 3);
-        this.scene.add(ambientLight);
-
-        // Side wall lights to create depth and reduce harsh shadows
-        const leftWallLight = new THREE.PointLight(0xffffff, 2, 20);
-        leftWallLight.position.set(-5, 3, 0);
-        this.scene.add(leftWallLight);
-
-
-        const rightWallLight = new THREE.PointLight(0xffffff, 2, 20);
-        rightWallLight.position.set(5, 3, 0);
-        this.scene.add(rightWallLight);
-
-        // Back wall light
-        const backWallLight = new THREE.PointLight(0xffffff, 1.5, 15);
-        backWallLight.position.set(0, 2, -5);
-        this.scene.add(backWallLight);
-
-        // Ground bounce light to simulate light reflection from floor
-        const groundLight = new THREE.HemisphereLight(0xffffff, 0xcccccc, 1);
-        groundLight.position.set(0, 10, 0);
-        this.scene.add(groundLight);
-    }
-
     changeModelColor(color) {
         if (this.currentModel) {
             this.currentModel.traverse((child) => {
@@ -295,6 +363,98 @@ class CarShowcase {
         }
     }
 
+    loadGarageEnvironment() {
+        const garageModelPath = new URL('../public/models/garage_warehouse.glb', import.meta.url).href;
+    
+        this.loader.load(
+            garageModelPath,
+            (gltf) => {
+                const garageModel = gltf.scene;
+                
+                // Enable shadows for the garage
+                garageModel.traverse((child) => {
+                    if (child.isMesh) {
+                        child.receiveShadow = true;
+                    }
+                });
+    
+                // Center the garage
+                const box = new THREE.Box3().setFromObject(garageModel);
+                const center = box.getCenter(new THREE.Vector3());
+                garageModel.position.sub(center);
+    
+                // Scale the garage
+                const size = box.getSize(new THREE.Vector3());
+                const maxDim = Math.max(size.x, size.y, size.z);
+                const scaleFactor = 100 / maxDim;
+                garageModel.scale.set(scaleFactor, scaleFactor, scaleFactor);
+    
+                // Position garage in the scene
+                garageModel.position.set(27, -1, 58);
+    
+                this.scene.add(garageModel);
+                this.garageEnvironment = garageModel;
+    
+                // Adjust camera position to view the garage
+                this.camera.position.set(0, 2, 8);
+                this.camera.lookAt(0, 0, 0);
+            },
+            undefined,
+            (error) => {
+                console.error('Error loading garage environment:', error);
+            }
+        );
+    }
+
+    loadCarModels() {
+        // Array of car model filenames
+        const carModels = [
+            '2009_volkswagen_amarok_lp.glb', 
+            '2015_lamborghini_huracan.glb', 
+            '2018_maserati_granturismo.glb', 
+            'bmw_m6_gran_coupe.glb',
+            'mercedes-benz_a45_amg_2018.glb'
+        ];
+
+        carModels.forEach(modelFileName => {
+            // Use an absolute path from the public directory
+            const modelPath = `/models/cars/${modelFileName}`;
+            const modelName = modelFileName.replace('.glb', '').replace(/_/g, ' ');
+            
+            fetch(modelPath)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = URL.createObjectURL(blob);
+                    
+                    this.loader.load(
+                        url,
+                        (gltf) => {
+                            // Store the model URL
+                            this.loadedModels[modelName] = url;
+                            
+                            // Add to models list
+                            if (!this.modelsList.includes(modelName)) {
+                                this.modelsList.push(modelName);
+                                this.updateModelsList();
+                            }
+                        },
+                        undefined,
+                        (error) => {
+                            console.error(`Error loading model ${modelFileName}:`, error);
+                        }
+                    );
+                })
+                .catch(error => {
+                    console.error(`Error fetching model ${modelFileName}:`, error);
+                });
+        });
+    }
+
     clearScene() {
         const lightsCount = this.scene.children.filter(child => child instanceof THREE.Light).length;
         const garageCount = this.garageEnvironment ? 1 : 0;
@@ -307,66 +467,6 @@ class CarShowcase {
         }
     }
 
-    loadModel(url, name, isNewUpload = false) {
-        this.loader.load(
-            url,
-            (gltf) => {
-                // Clear previous models (except garage)
-                this.clearScene();
-    
-                const model = gltf.scene;
-                this.currentModel = model;
-                
-                // Enable shadows for the model
-                model.traverse((child) => {
-                    if (child.isMesh) {
-                        child.castShadow = true;
-                        child.receiveShadow = true;
-                    }
-                });
-    
-                // Center and scale the model
-                const box = new THREE.Box3().setFromObject(model);
-                const center = box.getCenter(new THREE.Vector3());
-                model.position.sub(center);
-    
-                const size = box.getSize(new THREE.Vector3());
-                const maxDim = Math.max(size.x, size.y, size.z);
-                const scaleFactor = 23 / maxDim;
-                model.scale.set(scaleFactor, scaleFactor, scaleFactor);
-    
-                // Position model in the center of the garage
-                model.position.set(-2, -2, 0);
-    
-                this.scene.add(model);
-    
-                // Store the model
-                this.loadedModels[name] = url;
-    
-                // Add to models list if it's a new upload
-                if (isNewUpload && !this.modelsList.includes(name)) {
-                    this.modelsList.push(name);
-                    this.updateModelsList();
-                }
-            },
-            undefined,
-            (error) => {
-                console.error('Error loading model:', error);
-            }
-        );
-    }
-
-    updateModelsList() {
-        const modelsList = document.getElementById('models-list');
-        modelsList.innerHTML = '';
-        this.modelsList.forEach(modelName => {
-            const li = document.createElement('li');
-            li.textContent = modelName;
-            li.addEventListener('click', () => this.loadModelByName(modelName));
-            modelsList.appendChild(li);
-        });
-    }
-
     loadModelByName(name) {
         const modelUrl = this.loadedModels[name];
         if (modelUrl) {
@@ -374,11 +474,6 @@ class CarShowcase {
         }
     }
 
-    onWindowResize() {
-        this.camera.aspect = window.innerWidth * 0.8 / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(window.innerWidth * 0.8, window.innerHeight);
-    }
 
     animate() {
         requestAnimationFrame(() => this.animate());
