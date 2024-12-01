@@ -67,7 +67,7 @@ header a:hover {
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('/welcomeIMG.jpg');
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('../public/welcomeIMG.jpg');
     background-size: cover;
     background-position: center;
     color: white;
